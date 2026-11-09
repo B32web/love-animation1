@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Little Question ❤️</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(circle, #240b24, #080010 75%);
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Falling characters */
+#matrix {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+/* Main content */
+.container {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 25px;
+    width: 95%;
+    max-width: 550px;
+}
+
+h1 {
+    font-size: clamp(25px, 5vw, 40px);
+    color: #ff8bd5;
+    text-shadow: 0 0 10px #ff00a6,
+                 0 0 30px #ff00a6;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #e8c9e8;
+    margin-bottom: 25px;
+}
+
+/* Animated mathematical heart */
+.heart-box {
+    height: 240px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#heart {
+    width: 260px;
+    height: 230px;
+    filter: drop-shadow(0 0 12px #ff007f)
+            drop-shadow(0 0 30px #ff007f);
+    animation: heartbeat 1.5s infinite ease-in-out;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+/* Question */
+.question {
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: bold;
+    line-height: 1.5;
+    color: #fff;
+    margin: 20px 0 25px;
+    text-shadow: 0 0 15px #ff1493;
+}
+
+/* Buttons */
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+button {
+    border: none;
+    padding: 14px 35px;
+    border-radius: 40px;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#yes {
+    background: #ff168e;
+    color: white;
+    box-shadow: 0 0 15px #ff168e,
+                0 0 30px #ff168e;
+}
+
+#yes:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 35px #ff168e;
+}
+
+#no {
+    background: transparent;
+    border: 2px solid #ff80c0;
+    color: white;
+}
+
+#no:hover {
+    background: #ff168e;
+    transform: scale(1.05);
+}
+
+/* Response */
+#response {
+    display: none;
+    margin-top: 25px;
+    font-size: 21px;
+    color: #ff9bd6;
+    text-shadow: 0 0 15px #ff1493;
+}
+
+.small {
+    color: #bd91b9;
+    margin-top: 25px;
+    font-size: 12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="container">
+
+    <h1>Hey Beautiful ❤️</h1>
+
+    <p class="subtitle">
+        I have something special to ask you...
+    </p>
+
+    <div class="heart-box">
+        <svg id="heart" viewBox="0 0 340 300">
+            <defs>
+                <linearGradient id="heartColor">
+                    <stop offset="0%" stop-color="#ff007f"/>
+                    <stop offset="50%" stop-color="#ff65bb"/>
+                    <stop offset="100%" stop-color="#a000ff"/>
+                </linearGradient>
+            </defs>
+            <path id="heartPath"
+                fill="none"
+                stroke="url(#heartColor)"
+                stroke-width="3"/>
+        </svg>
+    </div>
+
+    <div class="question">
+        Will you go for an<br>
+        ice cream date with me? 🍦
+    </div>
+
+    <div class="buttons" id="buttons">
+        <button id="yes" onclick="sendAnswer('YES ❤️')">
+            YES ❤️
+        </button>
+
+        <button id="no" onclick="sendAnswer('NO 💔')">
+            NO 😅
+        </button>
+    </div>
+
+    <div id="response"></div>
+
+    <p class="small">
+        Made with a little mathematics and a lot of love.
+    </p>
+
+</div>
+
+<script>
+
+// =================================
+// 1. MATHEMATICAL HEART ANIMATION
+// =================================
+
+const path = document.getElementById("heartPath");
+
+let points = [];
+
+for (let t = 0; t <= Math.PI * 2; t += 0.015) {
+
+    // Parametric heart equations
+    let x = 16 * Math.pow(Math.sin(t), 3);
+
+    let y = 13 * Math.cos(t)
+          - 5 * Math.cos(2*t)
+          - 2 * Math.cos(3*t)
+          - Math.cos(4*t);
+
+    // Scale and position
+    let px = 170 + x * 7.5;
+    let py = 145 - y * 7.5;
+
+    points.push(`${px},${py}`);
+}
+
+path.setAttribute(
+    "d",
+    "M " + points.join(" L ") + " Z"
+);
+
+
+// =================================
+// 2. FALLING DIGITAL CHARACTERS
+// =================================
+
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+let width, height, columns, drops;
+
+function resize() {
+
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+
+    columns = Math.floor(width / 18);
+
+    drops = Array(columns).fill(1);
+}
+
+resize();
+
+window.addEventListener("resize", resize);
+
+const characters = "LOVE0123456789♥♡ILOVEYOU";
+
+function drawMatrix() {
+
+    ctx.fillStyle = "rgba(8, 0, 16, 0.09)";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.font = "15px monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+
+        const char = characters[
+            Math.floor(Math.random() * characters.length)
+        ];
+
+        ctx.fillStyle = Math.random() > 0.5
+            ? "#ff168e"
+            : "#a855f7";
+
+        ctx.fillText(char, i * 18, drops[i] * 18);
+
+        if (drops[i] * 18 > height && Math.random() > 0.97) {
+            drops[i] = 0;
+        }
+
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 45);
+
+
+// =================================
+// 3. SEND ANSWER TO YOUR EMAIL
+// =================================
+
+async function sendAnswer(answer) {
+
+    const responseBox = document.getElementById("response");
+    const buttons = document.getElementById("buttons");
+
+    responseBox.style.display = "block";
+    responseBox.innerHTML = "Sending your answer... 💌";
+
+    try {
+
+        const result = await fetch(
+            "https://formsubmit.co/ajax/georgemutuku35@gmail.com",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    _subject: "Someone answered your ice cream date question! 🍦",
+
+                    Answer: answer,
+
+                    Date: new Date().toLocaleString()
+
+                })
+            }
+        );
+
+        const data = await result.json();
+
+        if (result.ok && data.success) {
+
+            buttons.style.display = "none";
+
+            responseBox.innerHTML =
+                answer.startsWith("YES")
+                ? "YOU JUST MADE MY DAY! ❤️🍦<br>Ice cream date it is!"
+                : "Thank you for being honest. ❤️";
+
+        } else {
+
+            responseBox.innerHTML =
+                "Something went wrong. Please try again.";
+
+        }
+
+    } catch (error) {
+
+        responseBox.innerHTML =
+            "Unable to send your answer. Check your internet connection.";
+
+        console.error(error);
+
+    }
+}
+
+</script>
+
+</body>
+</html>
